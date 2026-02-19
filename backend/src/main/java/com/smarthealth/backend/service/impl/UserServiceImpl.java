@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.smarthealth.backend.dto.RegisterRequest;
 import com.smarthealth.backend.entity.Role;
 import com.smarthealth.backend.entity.User;
+import com.smarthealth.backend.entity.Profile;
 import com.smarthealth.backend.repository.RoleRepository;
 import com.smarthealth.backend.repository.UserRepository;
 import com.smarthealth.backend.security.jwt.JwtService;
@@ -41,6 +42,14 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(Set.of(roleUser))
                 .build();
+        
+        // Create and save profile with name
+        Profile profile = Profile.builder()
+                .user(user)
+                .name(request.getName())
+                .build();
+        user.setProfile(profile);
+        
 
         return userRepository.save(user);
     }

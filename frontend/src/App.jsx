@@ -1,46 +1,49 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Layout from "./components/Layout";
-import Workouts from "./pages/Workouts";
+import UserDashboard from "./pages/UserDashboard";
+import TrainerDashboard from "./pages/TrainerDashboard";
 
+function ProtectedRoute({ children, allowedRole }) {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-
-function App() {
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-  <Route
-  path="/dashboard"
-  element={
-    <ProtectedRoute>
-      <Layout>
-        <Dashboard />
-      </Layout>
-    </ProtectedRoute>
+  if (!token) {
+    return <Navigate to="/login" replace />;
   }
-/>
-
-<Route
-  path="/workouts"
-  element={
-    <ProtectedRoute>
-      <Layout>
-        <Workouts />
-      </Layout>
-    </ProtectedRoute>
+  if (allowedRole && role !== allowedRole) {
+    return <Navigate to="/login" replace />;
   }
-/>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
-  );
+  return children;
 }
 
-export default App;
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      <Route
+        path="/user-dashboard"
+        element={
+          <ProtectedRoute allowedRole="USER">
+            <UserDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/trainer-dashboard"
+        element={
+          <ProtectedRoute allowedRole="TRAINER">
+            <TrainerDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+}

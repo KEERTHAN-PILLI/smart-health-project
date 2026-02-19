@@ -30,7 +30,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             // Get user details from service
-            User user = userService.findByEmail(request.getEmail());
+User user = userService.findByEmail(request.getEmail()).orElse(null);
             if (user == null) {
                 return ResponseEntity.status(401).body(Map.of("error", "User not found"));
             }

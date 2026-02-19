@@ -3,12 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -19,10 +14,8 @@ export default function Login() {
 
   const validate = () => {
     const newErrors = {};
-
-    if (!form.email) newErrors.email = "Email required";
-    if (!form.password) newErrors.password = "Password required";
-
+    if (!form.email.trim()) newErrors.email = "Email is required";
+    if (!form.password) newErrors.password = "Password is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -37,32 +30,42 @@ export default function Login() {
       const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
       });
 
-      const data = await res.json().catch(() => null);
-
       if (!res.ok) {
-        throw new Error(data?.message || "Invalid credentials");
+        const data = await res.json().catch(() => null);
+        const errorMsg = data?.error || "Invalid credentials";
+        throw new Error(errorMsg);
       }
 
-      // ✅ Save token
+      const data = await res.json();
+
+      // Validate response structure
+      if (!data || !data.token || !data.role) {
+        console.error("Invalid response structure:", data);
+        throw new Error("Server returned invalid response: " + JSON.stringify(data));
+      }
+
+      // Store in localStorage
       localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+      if (data.name) {
+        localStorage.setItem("name", data.name);
+      }
 
-      // ✅ Extract role safely
-      const role = data.role || data.roles?.[0] || "USER";
-      localStorage.setItem("role", role);
-
-      alert("Login successful!");
-
-      if (role === "TRAINER") {
+      // Redirect based on role
+      if (data.role === "TRAINER") {
         navigate("/trainer-dashboard");
       } else {
         navigate("/user-dashboard");
       }
-
     } catch (err) {
-      alert(err.message);
+      console.error("Login error:", err);
+      alert("Login failed: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -71,35 +74,44 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h2>Login</h2>
+        <h2 className="auth-title">Welcome back</h2>
+        <p className="auth-subtitle">Login to access your dashboard.</p>
 
-        <form onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Email address</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+            />
+            {errors.email && <p className="error-text">{errors.email}</p>}
+          </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-          />
-          {errors.email && <p className="error-text">{errors.email}</p>}
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              value={form.password}
+              onChange={handleChange}
+            />
+            {errors.password && <p className="error-text">{errors.password}</p>}
+          </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-          />
-          {errors.password && <p className="error-text">{errors.password}</p>}
-
-          <button disabled={loading}>
+          <button className="auth-button" type="submit" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <p>
-          Don’t have account? <Link to="/register">Register</Link>
+        <p className="auth-footer-text">
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className="auth-link">
+            Register
+          </Link>
         </p>
       </div>
     </div>

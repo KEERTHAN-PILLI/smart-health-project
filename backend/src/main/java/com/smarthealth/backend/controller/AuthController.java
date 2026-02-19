@@ -46,8 +46,7 @@ public class AuthController {
 
             // Get user name from profile or use email
             String name = (user.getProfile() != null && user.getProfile().getName() != null) 
-                    ? user.getProfile().getName() 
-                    : user.getEmail().split("@")[0];
+                
 
             // Create response
             LoginResponse response = new LoginResponse();

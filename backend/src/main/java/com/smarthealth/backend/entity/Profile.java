@@ -28,6 +28,7 @@ public class Profile {
     private double weight;
     private double height;
     private String fitnessGoal;
+        private String name;
 
     @OneToOne
     @JoinColumn(name = "user_id")

@@ -15,6 +15,9 @@ import com.smarthealth.backend.security.jwt.JwtService;
 import com.smarthealth.backend.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 @Service
 @RequiredArgsConstructor
@@ -72,5 +75,39 @@ public User register(RegisterRequest request) {
     }
 
     
-}
+}    private final JavaMailSender mailSender;
 
+    @Override
+    public void generateResetOtp(String email) {
+        User user = findByEmail(email);
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+        user.setResetOtp(otp);
+        user.setResetOtpExpiry(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        sendEmail(email, "Password Reset OTP", "Your OTP is: " + otp);
+    }
+
+    @Override
+    public void resetPassword(String email, String otp, String newPassword) {
+        User user = findByEmail(email);
+        if (user.getResetOtp() == null || !user.getResetOtp().equals(otp)) {
+            throw new IllegalArgumentException("Invalid OTP");
+        }
+        if (user.getResetOtpExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("OTP expired");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetOtp(null);
+        user.setResetOtpExpiry(null);
+        userRepository.save(user);
+    }
+
+    private void sendEmail(String to, String subject, String body) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(body);
+        mailSender.send(message);
+    }
+}

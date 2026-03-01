@@ -24,6 +24,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "users")
 @Getter
+    import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -60,4 +61,7 @@ public class User {
     // ================= PROFILE =================
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Profile profile;
+    
+    private String resetOtp;
+    private LocalDateTime resetOtpExpiry;
 }

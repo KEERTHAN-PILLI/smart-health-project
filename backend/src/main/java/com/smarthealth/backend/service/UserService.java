@@ -14,6 +14,8 @@ public interface UserService {
     Map<String, Object> googleLogin(String credential);
 
     User findByEmail(String email);
-}    void generateResetOtp(String email);
+
+    void generateResetOtp(String email);
+
     void resetPassword(String email, String otp, String newPassword);
 }

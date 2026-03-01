@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
         
         User user = User.builder()
                 .email(request.getEmail())
-                .password(new BCryptPasswordEncoder().encode(request.getPassword()))
+                .password(passwordEncoder.encode(request.getPassword()))
                 .roles(new HashSet<>(Collections.singleton(userRole)))
                 .enabled(true)
                 .provider("LOCAL")

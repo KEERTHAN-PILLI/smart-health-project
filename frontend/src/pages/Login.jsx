@@ -48,8 +48,6 @@ export default function Login() {
       const data = await res.json();
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data));
-      
-      // REDIRECT TO DASHBOARD AFTER SUCCESSFUL LOGIN
       navigate("/dashboard");
     } catch (error) {
       setErrors({ form: error.message });
@@ -58,7 +56,6 @@ export default function Login() {
     }
   };
 
-  // Forgot Password - Send OTP
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setForgotLoading(true);
@@ -85,7 +82,6 @@ export default function Login() {
     }
   };
 
-  // Forgot Password - Reset Password with OTP
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setForgotLoading(true);
@@ -119,13 +115,9 @@ export default function Login() {
     }
   };
 
-  // FIXED: Google OAuth handler - navigate to dashboard instead of alert
   const handleGoogleLogin = () => {
-    // TODO: Integrate real Google OAuth here using @react-oauth/google
-    // For now, redirect to dashboard
-    console.log("Google OAuth will be integrated here");
-    // Uncomment after setting up Google OAuth:
-    // navigate("/dashboard");
+    console.log("Google OAuth will be integrated");
+    // TODO: Add Google OAuth integration here
   };
 
   return (
@@ -140,7 +132,7 @@ export default function Login() {
 
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="form-group">
-            abel>EMAIL ADDRESS</label>
+            <label>EMAIL ADDRESS</label>
             <input
               type="email"
               name="email"
@@ -153,7 +145,7 @@ export default function Login() {
           </div>
 
           <div className="form-group">
-            abel>PASSWORD</label>
+            <label>PASSWORD</label>
             <input
               type="password"
               name="password"
@@ -201,10 +193,13 @@ export default function Login() {
         </p>
       </div>
 
-      {/* Forgot Password Modal */}
       {showForgotModal && (
         <div className="modal-overlay" onClick={() => setShowForgotModal(false)}>
-          <div className="auth-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "380px" }}>
+          <div
+            className="auth-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "380px" }}
+          >
             <button
               type="button"
               style={{
@@ -232,7 +227,7 @@ export default function Login() {
             {forgotStep === "email" && (
               <form className="auth-form" onSubmit={handleSendOtp}>
                 <div className="form-group">
-                  abel>Email Address</label>
+                  <label>Email Address</label>
                   <input
                     type="email"
                     value={forgotEmail}
@@ -254,7 +249,7 @@ export default function Login() {
             {forgotStep === "otp" && (
               <form className="auth-form" onSubmit={handleResetPassword}>
                 <div className="form-group">
-                  abel>OTP (6 Digits)</label>
+                  <label>OTP (6 Digits)</label>
                   <input
                     type="text"
                     value={otp}
@@ -265,7 +260,7 @@ export default function Login() {
                   />
                 </div>
                 <div className="form-group">
-                  abel>New Password</label>
+                  <label>New Password</label>
                   <input
                     type="password"
                     value={newPassword}

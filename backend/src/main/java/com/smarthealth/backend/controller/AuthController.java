@@ -1,14 +1,9 @@
 package com.smarthealth.backend.controller;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.smarthealth.backend.dto.LoginRequest;
 import com.smarthealth.backend.dto.LoginResponse;
@@ -22,35 +17,25 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5175")
 public class AuthController {
+
     private final UserService userService;
 
     // ================= LOGIN =================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            // Get user details from service
-User user = userService.findByEmail(request.getEmail()).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(401).body(Map.of("error", "User not found"));
-            }
 
-            // Validate password
+            User user = userService.findByEmail(request.getEmail());
             String token = userService.login(request.getEmail(), request.getPassword());
 
-            // Get user role (get first role or default)
-            String role = user.getRoles().stream()
-                    .map(r -> r.getName())
-                    .findFirst()
-                    .orElse("USER");
+            String role = user.getRole();  // ✅ simple role column
 
-            // Get user name from profile or use email
-            String name = (user.getProfile() != null && user.getProfile().getName() != null) 
-                                    ? user.getProfile().getName()
+            String name = user.getProfile() != null && user.getProfile().getName() != null
+                    ? user.getProfile().getName()
                     : user.getEmail().split("@")[0];
-                
 
-            // Create response
             LoginResponse response = new LoginResponse();
             response.setToken(token);
             response.setRole(role);
@@ -58,10 +43,11 @@ User user = userService.findByEmail(request.getEmail()).orElse(null);
             response.setEmail(user.getEmail());
 
             return ResponseEntity.ok(response);
+
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Login failed: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "Login failed"));
         }
     }
 
@@ -70,19 +56,20 @@ User user = userService.findByEmail(request.getEmail()).orElse(null);
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
             User user = userService.register(request);
+
             UserResponse response = UserResponse.builder()
                     .id(user.getId())
                     .email(user.getEmail())
                     .provider(user.getProvider())
                     .enabled(user.isEnabled())
-                    .roles(user.getRoles()
-                            .stream()
-                            .map(role -> role.getName())
-                            .collect(Collectors.toSet()))
+                    .role(user.getRole())   // ✅ send simple role
                     .build();
+
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(Map.of("error", "Registration failed: " + e.getMessage()));
+            return ResponseEntity.status(400)
+                    .body(Map.of("error", "Registration failed: " + e.getMessage()));
         }
     }
 }

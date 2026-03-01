@@ -13,5 +13,6 @@ public class UserResponse {
     private String email;
     private String provider;
     private boolean enabled;
-    private Set<String> roles;
+    private String role;
+
 }

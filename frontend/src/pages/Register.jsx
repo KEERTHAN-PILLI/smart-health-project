@@ -80,65 +80,88 @@ export default function Register() {
     }
   };
 
-  return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2>Create Account</h2>
+ return (
+  <div className="auth-page">
+    <div className="auth-card">
+      <h2 className="auth-title">Create Account</h2>
+      <p className="auth-subtitle">
+        Register to start your fitness journey.
+      </p>
 
-        <form onSubmit={handleSubmit}>
+      <form className="auth-form" onSubmit={handleSubmit}>
 
+        <div className="form-group">
+          <label>Full Name</label>
           <input
             type="text"
             name="name"
-            placeholder="Full Name"
+            placeholder="Enter your full name"
             value={form.name}
             onChange={handleChange}
           />
           {errors.name && <p className="error-text">{errors.name}</p>}
+        </div>
 
+        <div className="form-group">
+          <label>Email</label>
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="you@example.com"
             value={form.email}
             onChange={handleChange}
           />
           {errors.email && <p className="error-text">{errors.email}</p>}
+        </div>
 
+        <div className="form-group">
+          <label>Password</label>
           <input
             type="password"
             name="password"
-            placeholder="Password"
+            placeholder="Enter password"
             value={form.password}
             onChange={handleChange}
           />
           {errors.password && <p className="error-text">{errors.password}</p>}
+        </div>
 
+        <div className="form-group">
+          <label>Confirm Password</label>
           <input
             type="password"
             name="confirmPassword"
-            placeholder="Confirm Password"
+            placeholder="Confirm password"
             value={form.confirmPassword}
             onChange={handleChange}
           />
           {errors.confirmPassword && (
             <p className="error-text">{errors.confirmPassword}</p>
           )}
+        </div>
 
+        <div className="form-group">
+          <label>Select Role</label>
           <select name="role" value={form.role} onChange={handleChange}>
             <option value="USER">User</option>
             <option value="TRAINER">Trainer</option>
           </select>
+        </div>
 
-          <button disabled={loading}>
-            {loading ? "Creating..." : "Register"}
-          </button>
-        </form>
+        <button className="auth-button" disabled={loading}>
+          {loading ? "Creating..." : "Register"}
+        </button>
 
-        <p>
-          Already have account? <Link to="/login">Login</Link>
-        </p>
-      </div>
+      </form>
+
+      <p className="auth-footer-text">
+        Already have an account?{" "}
+        <Link to="/login" className="auth-link">
+          Login
+        </Link>
+      </p>
     </div>
-  );
+  </div>
+);
+
 }

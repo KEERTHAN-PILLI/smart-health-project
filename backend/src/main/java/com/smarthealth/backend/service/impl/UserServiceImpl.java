@@ -6,9 +6,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.smarthealth.backend.dto.RegisterRequest;
+import com.smarthealth.backend.entity.Profile;
 import com.smarthealth.backend.entity.Role;
 import com.smarthealth.backend.entity.User;
-import com.smarthealth.backend.entity.Profile;
 import com.smarthealth.backend.repository.RoleRepository;
 import com.smarthealth.backend.repository.UserRepository;
 import com.smarthealth.backend.security.jwt.JwtService;
@@ -26,35 +26,39 @@ public class UserServiceImpl implements UserService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // ================= REGISTER =================
     @Override
-    public User register(RegisterRequest request) {
+public User register(RegisterRequest request) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
-        }
-
-        Role roleUser = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new IllegalArgumentException("Role not found"));
-
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .roles(Set.of(roleUser))
-                .build();
-        
-        // Create and save profile with name
-        Profile profile = Profile.builder()
-                .user(user)
-                .name(request.getName())
-                .build();
-        user.setProfile(profile);
-        
-
-        return userRepository.save(user);
+    if (userRepository.existsByEmail(request.getEmail())) {
+        throw new IllegalArgumentException("Email already exists");
     }
 
-    // ================= LOGIN =================
+    String role = "USER"; // default
+
+    if (request.getRole() != null && request.getRole().equalsIgnoreCase("TRAINER")) {
+        role = "TRAINER";
+    }
+
+    User user = User.builder()
+            .email(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .role(role) // 🔥 VERY IMPORTANT
+            .enabled(true)
+            .provider("LOCAL")
+            .build();
+
+    Profile profile = Profile.builder()
+            .user(user)
+            .name(request.getName())
+            .build();
+
+    user.setProfile(profile);
+
+    return userRepository.save(user);
+}
+
+
+
     @Override
     public String login(String email, String password) {
 
@@ -67,4 +71,12 @@ public class UserServiceImpl implements UserService {
 
         return jwtService.generateToken(user.getEmail());
     }
+
+    // 🔥 ADD THIS METHOD
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
 }
+

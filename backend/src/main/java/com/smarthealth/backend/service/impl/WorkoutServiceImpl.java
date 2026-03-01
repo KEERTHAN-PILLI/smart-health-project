@@ -50,4 +50,5 @@ public class WorkoutServiceImpl implements WorkoutService {
 
         workoutRepository.delete(workout);
     }
+    
 }

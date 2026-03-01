@@ -31,41 +31,27 @@ export default function Login() {
       const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-        }),
+        body: JSON.stringify(form),
       });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        const errorMsg = data?.error || "Invalid credentials";
-        throw new Error(errorMsg);
-      }
 
       const data = await res.json();
 
-      // Validate response structure
-      if (!data || !data.token || !data.role) {
-        console.error("Invalid response structure:", data);
-        throw new Error("Server returned invalid response: " + JSON.stringify(data));
+      if (!res.ok) {
+        throw new Error(data?.error || "Invalid credentials");
       }
 
-      // Store in localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
-      if (data.name) {
-        localStorage.setItem("name", data.name);
-      }
+      localStorage.setItem("name", data.name || "");
 
-      // Redirect based on role
+      // ✅ Navigate properly
       if (data.role === "TRAINER") {
         navigate("/trainer-dashboard");
       } else {
         navigate("/user-dashboard");
       }
+
     } catch (err) {
-      console.error("Login error:", err);
       alert("Login failed: " + err.message);
     } finally {
       setLoading(false);
@@ -80,15 +66,13 @@ export default function Login() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Email address</label>
+            <label>Email</label>
             <input
               type="email"
               name="email"
-              placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
             />
-            {errors.email && <p className="error-text">{errors.email}</p>}
           </div>
 
           <div className="form-group">
@@ -96,11 +80,9 @@ export default function Login() {
             <input
               type="password"
               name="password"
-              placeholder="Enter your password"
               value={form.password}
               onChange={handleChange}
             />
-            {errors.password && <p className="error-text">{errors.password}</p>}
           </div>
 
           <button className="auth-button" type="submit" disabled={loading}>
@@ -109,10 +91,7 @@ export default function Login() {
         </form>
 
         <p className="auth-footer-text">
-          Don&apos;t have an account?{" "}
-          <Link to="/register" className="auth-link">
-            Register
-          </Link>
+          Don't have an account? <Link to="/register">Register</Link>
         </p>
       </div>
     </div>

@@ -1,10 +1,14 @@
-import { useContext } from "react";
-import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+function ProtectedRoute({ children, allowedRole }) {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-const ProtectedRoute = ({ children }) => {
-  const { token } = useContext(AuthContext);
-  return token ? children : <Navigate to="/" />;
-};
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
-export default ProtectedRoute;
+  if (allowedRole && role?.toUpperCase() !== allowedRole.toUpperCase()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}

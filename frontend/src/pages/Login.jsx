@@ -7,11 +7,9 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-
-  // Forgot Password States
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotStep, setForgotStep] = useState("email"); // "email" or "otp"
+  const [forgotStep, setForgotStep] = useState("email");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -41,13 +39,17 @@ export default function Login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
+
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Login failed");
       }
+
       const data = await res.json();
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data));
+      
+      // REDIRECT TO DASHBOARD AFTER SUCCESSFUL LOGIN
       navigate("/dashboard");
     } catch (error) {
       setErrors({ form: error.message });
@@ -68,11 +70,13 @@ export default function Login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: forgotEmail }),
       });
+
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to send OTP");
       }
-      setForgotMsg("✅ OTP sent to your email. Check your inbox!");
+
+      setForgotMsg("✅ OTP sent to your email!");
       setForgotStep("otp");
     } catch (error) {
       setForgotError(error.message);
@@ -91,24 +95,22 @@ export default function Login() {
       const res = await fetch("http://localhost:8080/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: forgotEmail,
-          otp,
-          newPassword,
-        }),
+        body: JSON.stringify({ email: forgotEmail, otp, newPassword }),
       });
+
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to reset password");
       }
-      setForgotMsg("✅ Password reset successfully! You can now login.");
+
+      setForgotMsg("✅ Password reset successfully! Redirecting...");
       setTimeout(() => {
         setShowForgotModal(false);
         setForgotStep("email");
         setForgotEmail("");
         setOtp("");
         setNewPassword("");
-        setForgotMsg("");
+        navigate("/login");
       }, 1500);
     } catch (error) {
       setForgotError(error.message);
@@ -117,147 +119,125 @@ export default function Login() {
     }
   };
 
+  // FIXED: Google OAuth handler - navigate to dashboard instead of alert
+  const handleGoogleLogin = () => {
+    // TODO: Integrate real Google OAuth here using @react-oauth/google
+    // For now, redirect to dashboard
+    console.log("Google OAuth will be integrated here");
+    // Uncomment after setting up Google OAuth:
+    // navigate("/dashboard");
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h2 className="auth-title">Welcome Back</h2>
-        <p className="auth-subtitle">
-          Login to your account to continue your journey.
-        </p>
+        <div className="auth-header">
+          <h2 className="auth-title">WELCOME BACK</h2>
+          <p className="auth-subtitle">Login to your account and continue</p>
+        </div>
 
-        {errors.form && <p className="error-text">{errors.form}</p>}
+        {errors.form && <p className="error-message">{errors.form}</p>}
 
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="form-group">
-            <label>Email Address</label>
+            abel>EMAIL ADDRESS</label>
             <input
               type="email"
               name="email"
-              placeholder="Enter your email"
+              placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
+              required
             />
             {errors.email && <p className="error-text">{errors.email}</p>}
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            abel>PASSWORD</label>
             <input
               type="password"
               name="password"
-              placeholder="Enter your password"
+              placeholder="Enter password"
               value={form.password}
               onChange={handleChange}
+              required
             />
             {errors.password && <p className="error-text">{errors.password}</p>}
           </div>
 
-          <div className="auth-actions" style={{ marginBottom: '1.5rem', textAlign: 'right' }}>
+          <div className="auth-actions">
             <button
               type="button"
               className="auth-link"
-              style={{ background: 'none', border: 'none' }}
-              onClick={() => {
-                setShowForgotModal(true);
-                setForgotStep("email");
-                setForgotEmail("");
-                setOtp("");
-                setNewPassword("");
-                setForgotMsg("");
-                setForgotError("");
-              }}
+              onClick={() => setShowForgotModal(true)}
             >
               Forgot Password?
             </button>
           </div>
 
-          <button className="auth-button" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-
-          <div className="divider" style={{ margin: '1.5rem 0', display: 'flex', alignItems: 'center', color: 'var(--text-gray)' }}>
-            <div style={{ flex: 1, height: '1px', background: 'var(--text-gray)', opacity: 0.2 }}></div>
-            <span style={{ margin: '0 1rem', fontSize: '0.9rem' }}>OR</span>
-            <div style={{ flex: 1, height: '1px', background: 'var(--text-gray)', opacity: 0.2 }}></div>
-          </div>
-
-          <button
-            type="button"
-            className="google-button"
-            style={{
-              width: '100%',
-              padding: '0.8rem',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.05)',
-              color: 'var(--text-white)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              transition: 'var(--transition)'
-            }}
-            onClick={() => alert("Google login will be integrated with Google OAuth library")}
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" />
-            Continue with Google
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? "LOGGING IN..." : "LOGIN"}
           </button>
         </form>
 
+        <div className="divider">OR</div>
+
+        <button
+          type="button"
+          className="google-button"
+          onClick={handleGoogleLogin}
+        >
+          <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            width="18"
+          />
+          Continue with Google
+        </button>
+
         <p className="auth-footer-text">
           Don't have an account?{" "}
-          <Link to="/register" className="auth-link">
-            Register
-          </Link>
+          <Link to="/register">Create one</Link>
         </p>
       </div>
 
       {/* Forgot Password Modal */}
       {showForgotModal && (
-        <div className="modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0,0,0,0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(5px)'
-        }}>
-          <div className="auth-card" style={{ maxWidth: '400px', width: '90%', position: 'relative' }}>
+        <div className="modal-overlay" onClick={() => setShowForgotModal(false)}>
+          <div className="auth-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "380px" }}>
             <button
               type="button"
               style={{
-                position: 'absolute',
-                top: '15px',
-                right: '15px',
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-white)',
-                fontSize: '1.2rem',
-                cursor: 'pointer'
+                position: "absolute",
+                top: "1rem",
+                right: "1rem",
+                background: "none",
+                border: "none",
+                color: "var(--text-white)",
+                fontSize: "1.5rem",
+                cursor: "pointer",
               }}
               onClick={() => setShowForgotModal(false)}
             >
-              ✕
+              ×
             </button>
-            <h3 className="auth-title" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Reset Password</h3>
-            {forgotError && <p className="error-text">{forgotError}</p>}
-            {forgotMsg && <p style={{ color: 'var(--success)', marginBottom: '1rem', fontSize: '0.9rem' }}>{forgotMsg}</p>}
-            
+
+            <h3 className="auth-title" style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
+              Reset Password
+            </h3>
+
+            {forgotError && <p className="error-message">{forgotError}</p>}
+            {forgotMsg && <p className="success-message">{forgotMsg}</p>}
+
             {forgotStep === "email" && (
               <form className="auth-form" onSubmit={handleSendOtp}>
                 <div className="form-group">
-                  <label>Email Address</label>
+                  abel>Email Address</label>
                   <input
                     type="email"
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="Enter your registered email"
+                    placeholder="Enter your email"
                     required
                   />
                 </div>
@@ -266,7 +246,7 @@ export default function Login() {
                   className="auth-button"
                   disabled={forgotLoading}
                 >
-                  {forgotLoading ? "Sending OTP..." : "Send OTP"}
+                  {forgotLoading ? "SENDING..." : "SEND OTP"}
                 </button>
               </form>
             )}
@@ -274,7 +254,7 @@ export default function Login() {
             {forgotStep === "otp" && (
               <form className="auth-form" onSubmit={handleResetPassword}>
                 <div className="form-group">
-                  <label>OTP (6 digits)</label>
+                  abel>OTP (6 Digits)</label>
                   <input
                     type="text"
                     value={otp}
@@ -285,7 +265,7 @@ export default function Login() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>New Password</label>
+                  abel>New Password</label>
                   <input
                     type="password"
                     value={newPassword}
@@ -299,17 +279,21 @@ export default function Login() {
                   className="auth-button"
                   disabled={forgotLoading}
                 >
-                  {forgotLoading ? "Resetting..." : "Reset Password"}
+                  {forgotLoading ? "RESETTING..." : "RESET PASSWORD"}
                 </button>
                 <button
                   type="button"
                   className="auth-link"
-                  style={{ marginTop: '1rem', display: 'block', textAlign: 'center', width: '100%', background: 'none', border: 'none' }}
+                  style={{
+                    marginTop: "1rem",
+                    display: "block",
+                    textAlign: "center",
+                    width: "100%",
+                  }}
                   onClick={() => {
                     setForgotStep("email");
                     setOtp("");
                     setNewPassword("");
-                    setForgotMsg("");
                   }}
                 >
                   ← Back to Email

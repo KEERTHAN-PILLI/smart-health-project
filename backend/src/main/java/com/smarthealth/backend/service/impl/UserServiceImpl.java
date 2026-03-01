@@ -18,6 +18,9 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import java.util.Map;
+import java.util.HashMap;
+import com.smarthealth.backend.dto.LoginRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -111,3 +114,66 @@ public User register(RegisterRequest request) {
         mailSender.send(message);
     }
 }
+
+    @Override
+    public Map<String, Object> login(LoginRequest request) {
+        try {
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("Invalid password");
+            }
+            
+            String token = jwtService.generateToken(user.getEmail());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("user", user);
+            return response;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Login failed: " + e.getMessage());
+        }
+    }
+    
+    @Override
+    public Map<String, Object> googleLogin(String credential) {
+        // For now, return a simple implementation
+        // In production, decode JWT credential and verify with Google
+        try {
+            // TODO: Decode the JWT credential
+            // For now, assume the credential contains encoded user data
+            // This is a placeholder implementation
+            
+            String email = "google-user@smarthealth.com"; // TODO: Extract from credential
+            
+            User user = userRepository.findByEmail(email)
+                    .orElseGet(() -> {
+                        // Create new user if doesn't exist
+                        Role userRole = roleRepository.findByName("ROLE_USER")
+                                .orElseGet(() -> {
+                                    Role role = new Role();
+                                    role.setName("ROLE_USER");
+                                    return roleRepository.save(role);
+                                });
+                        
+                        User newUser = User.builder()
+                                .email(email)
+                                .provider("GOOGLE")
+                                .password("") // Google users don't have passwords
+                                .enabled(true)
+                                .roles(new HashSet<>(Collections.singleton(userRole)))
+                                .build();
+                        return userRepository.save(newUser);
+                    });
+            
+            String token = jwtService.generateToken(user.getEmail());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("user", user);
+            return response;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Google login failed: " + e.getMessage());
+        }
+    }

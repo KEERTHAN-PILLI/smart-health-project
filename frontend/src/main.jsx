@@ -10,7 +10,7 @@ const GOOGLE_CLIENT_ID = "133176962508-temshevesvlm0t4p6j4aou024a66v3ss.apps.goo
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <BrowserRouter>
         <App />
       </BrowserRouter>

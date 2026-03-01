@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import "../styles/auth.css";
 
 export default function Login() {
@@ -115,9 +116,18 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    console.log("Google OAuth will be integrated");
-    // TODO: Add Google OAuth integration here
+  // Google OAuth Success Handler
+  const handleGoogleSuccess = (credentialResponse) => {
+    console.log("Google Login Success:", credentialResponse);
+    // TODO: Send credential to your backend for verification
+    // For now, just navigate to dashboard
+    navigate("/dashboard");
+  };
+
+  // Google OAuth Error Handler  
+  const handleGoogleError = () => {
+    console.log("Google Login Failed");
+    setErrors({ form: "Google login failed. Please try again." });
   };
 
   return (
@@ -174,18 +184,17 @@ export default function Login() {
 
         <div className="divider">OR</div>
 
-        <button
-          type="button"
-          className="google-button"
-          onClick={handleGoogleLogin}
-        >
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-            width="18"
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "0.75rem" }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            useOneTap
+            theme="filled_blue"
+            size="large"
+            text="continue_with"
+            shape="rectangular"
           />
-          Continue with Google
-        </button>
+        </div>
 
         <p className="auth-footer-text">
           Don't have an account?{" "}

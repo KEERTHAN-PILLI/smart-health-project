@@ -1,12 +1,12 @@
 package com.smarthealth.backend.service.impl;
 
-import java.util.Set;
+import java.util.Collections;
+import java.util.HashSet;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.smarthealth.backend.dto.RegisterRequest;
-import com.smarthealth.backend.entity.Profile;
 import com.smarthealth.backend.entity.Role;
 import com.smarthealth.backend.entity.User;
 import com.smarthealth.backend.repository.RoleRepository;
@@ -26,36 +26,28 @@ public class UserServiceImpl implements UserService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    @Override
+@Override
 public User register(RegisterRequest request) {
-
-    if (userRepository.existsByEmail(request.getEmail())) {
-        throw new IllegalArgumentException("Email already exists");
-    }
-
-    String role = "USER"; // default
-
-    if (request.getRole() != null && request.getRole().equalsIgnoreCase("TRAINER")) {
-        role = "TRAINER";
-    }
-
+    // Get or create ROLE_USER
+    Role userRole = roleRepository.findByName("ROLE_USER")
+            .orElseGet(() -> {
+                Role role = new Role();
+                role.setName("ROLE_USER");
+                return roleRepository.save(role);
+            });
+    
     User user = User.builder()
             .email(request.getEmail())
-            .password(passwordEncoder.encode(request.getPassword()))
-            .role(role) // 🔥 VERY IMPORTANT
+            .password(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder()
+                    .encode(request.getPassword()))
+            .roles(new HashSet<>(Collections.singleton(userRole)))  // ✅ CORRECT: userRole is guaranteed non-null
             .enabled(true)
             .provider("LOCAL")
             .build();
 
-    Profile profile = Profile.builder()
-            .user(user)
-            .name(request.getName())
-            .build();
-
-    user.setProfile(profile);
-
     return userRepository.save(user);
 }
+
 
 
 
@@ -78,5 +70,7 @@ public User register(RegisterRequest request) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
+
+    
 }
 

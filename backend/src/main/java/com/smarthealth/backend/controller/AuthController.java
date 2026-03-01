@@ -3,7 +3,11 @@ package com.smarthealth.backend.controller;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.smarthealth.backend.dto.LoginRequest;
 import com.smarthealth.backend.dto.LoginResponse;
@@ -30,7 +34,10 @@ public class AuthController {
             User user = userService.findByEmail(request.getEmail());
             String token = userService.login(request.getEmail(), request.getPassword());
 
-            String role = user.getRole();  // ✅ simple role column
+            String role = user.getRoles().stream()
+                    .map(roleEntity -> roleEntity.getName())
+                    .findFirst()
+                    .orElse("USER");
 
             String name = user.getProfile() != null && user.getProfile().getName() != null
                     ? user.getProfile().getName()
@@ -62,7 +69,10 @@ public class AuthController {
                     .email(user.getEmail())
                     .provider(user.getProvider())
                     .enabled(user.isEnabled())
-                    .role(user.getRole())   // ✅ send simple role
+                    .role(user.getRoles().stream()
+                            .map(roleEntity -> roleEntity.getName())
+                            .findFirst()
+                            .orElse("USER"))   // ✅ send simple role
                     .build();
 
             return ResponseEntity.ok(response);

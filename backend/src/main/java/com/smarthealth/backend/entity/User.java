@@ -2,6 +2,7 @@ package com.smarthealth.backend.entity;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -15,6 +16,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,11 +26,10 @@ import lombok.Setter;
 @Entity
 @Table(name = "users")
 @Getter
-    import java.time.LocalDateTime;
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
 
     @Id
@@ -41,27 +42,27 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    // ================= DEFAULT FIELDS =================
+    // ==================== DEFAULT FIELDS ====================
     @Builder.Default
     private String provider = "LOCAL";
 
     @Builder.Default
     private boolean enabled = true;
 
-    // ================= ROLES =================
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    @Builder.Default
-    private Set<Role> roles = new HashSet<>();
-
-    // ================= PROFILE =================
+    // ==================== PROFILE ====================
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Profile profile;
-    
+
+    // ==================== ROLES ====================
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    // ==================== PASSWORD RESET OTP FIELDS ====================
     private String resetOtp;
     private LocalDateTime resetOtpExpiry;
 }

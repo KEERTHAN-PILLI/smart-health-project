@@ -1,10 +1,16 @@
-package com.smarthealth.backend.controller;
+package com.smarthealth.backend.service.src.main.java.com.smarthealth.backend.controller;
 
-import com.smarthealth.backend.service.AuthService;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.Map;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smarthealth.backend.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")

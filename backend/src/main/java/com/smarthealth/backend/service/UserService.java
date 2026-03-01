@@ -10,4 +10,6 @@ public interface UserService {
     String login(String email, String password);
 
     User findByEmail(String email);
+}    void generateResetOtp(String email);
+    void resetPassword(String email, String otp, String newPassword);
 }

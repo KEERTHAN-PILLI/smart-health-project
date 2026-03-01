@@ -53,7 +53,6 @@ export default function Register() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data));
       
-      // REDIRECT TO DASHBOARD AFTER SUCCESSFUL REGISTRATION
       navigate("/dashboard");
     } catch (error) {
       setErrors({ form: error.message });
@@ -67,14 +66,14 @@ export default function Register() {
       <div className="auth-card">
         <div className="auth-header">
           <h2 className="auth-title">CREATE ACCOUNT</h2>
-          <p className="auth-subtitle">Join us today and get started</p>
+          <p className="auth-subtitle">Join us and get started today</p>
         </div>
 
         {errors.form && <p className="error-message">{errors.form}</p>}
 
         <form className="auth-form" onSubmit={handleRegister}>
           <div className="form-group">
-            abel>FULL NAME</label>
+            <label>FULL NAME</label>
             <input
               type="text"
               name="name"
@@ -87,7 +86,7 @@ export default function Register() {
           </div>
 
           <div className="form-group">
-            abel>EMAIL ADDRESS</label>
+            <label>EMAIL ADDRESS</label>
             <input
               type="email"
               name="email"
@@ -100,7 +99,7 @@ export default function Register() {
           </div>
 
           <div className="form-group">
-            abel>PASSWORD</label>
+            <label>PASSWORD</label>
             <input
               type="password"
               name="password"
@@ -113,7 +112,7 @@ export default function Register() {
           </div>
 
           <div className="form-group">
-            abel>CONFIRM PASSWORD</label>
+            <label>CONFIRM PASSWORD</label>
             <input
               type="password"
               name="confirmPassword"
@@ -133,7 +132,8 @@ export default function Register() {
         </form>
 
         <p className="auth-footer-text">
-          Already have an account? <Link to="/login">Login here</Link>
+          Already have an account?{" "}
+          <Link to="/login">Login here</Link>
         </p>
       </div>
     </div>

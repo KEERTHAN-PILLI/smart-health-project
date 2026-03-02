@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.time.LocalDateTime;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,10 +14,12 @@ import com.smarthealth.backend.dto.RegisterRequest;
 import com.smarthealth.backend.dto.LoginRequest;
 import com.smarthealth.backend.entity.Role;
 import com.smarthealth.backend.entity.User;
+import com.smarthealth.backend.entity.Profile;
 import com.smarthealth.backend.repository.RoleRepository;
 import com.smarthealth.backend.repository.UserRepository;
 import com.smarthealth.backend.security.jwt.JwtService;
 import com.smarthealth.backend.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,18 +31,21 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final JwtService jwtService;
     private final JavaMailSender mailSender;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public User register(RegisterRequest request) {
-        // Get or create ROLE_USER
-        Role userRole = roleRepository.findByName("ROLE_USER")
+    public Map<String, Object> register(RegisterRequest request) {
+        // Normalise role: "USER" or "TRAINER" -> "ROLE_USER" or "ROLE_TRAINER"
+        String requestedRole = request.getRole() != null ? request.getRole() : "USER";
+        String roleName = requestedRole.startsWith("ROLE_") ? requestedRole : "ROLE_" + requestedRole;
+
+        Role userRole = roleRepository.findByName(roleName)
                 .orElseGet(() -> {
                     Role role = new Role();
-                    role.setName("ROLE_USER");
+                    role.setName(roleName);
                     return roleRepository.save(role);
                 });
-        
+
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -49,8 +53,29 @@ public class UserServiceImpl implements UserService {
                 .enabled(true)
                 .provider("LOCAL")
                 .build();
-        
-        return userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+
+        // Create initial profile with name
+        Profile profile = Profile.builder()
+                .name(request.getName())
+                .user(savedUser)
+                .build();
+
+        // Save profile (CascadeType.ALL on User.profile should handle this if we set
+        // it,
+        // but User.profile is mappedBy="user" so we must save Profile explicitly or set
+        // User.profile)
+        // Let's set it on User to be safe if cascade is configured
+        savedUser.setProfile(profile);
+        userRepository.save(savedUser);
+
+        String token = jwtService.generateToken(savedUser.getEmail());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", savedUser);
+        return response;
     }
 
     @Override
@@ -58,13 +83,13 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
-            
+
             if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 throw new IllegalArgumentException("Invalid password");
             }
-            
+
             String token = jwtService.generateToken(user.getEmail());
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
             response.put("user", user);
@@ -108,33 +133,44 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Object> googleLogin(String credential) {
+    public Map<String, Object> googleLogin(String email, String name, String role) {
+        // Normalise: accept "USER"/"TRAINER" or "ROLE_USER"/"ROLE_TRAINER"
+        String roleName = role != null && role.startsWith("ROLE_") ? role : "ROLE_" + (role != null ? role : "USER");
         try {
-            // TODO: In production, decode the JWT credential using Google's library
-            // For now, this is a placeholder implementation
-            String email = "google-user@smarthealth.com"; // TODO: Extract from credential
-            
+            if (email == null || email.isBlank()) {
+                throw new IllegalArgumentException("Email is required for Google login");
+            }
+
             User user = userRepository.findByEmail(email)
                     .orElseGet(() -> {
-                        Role userRole = roleRepository.findByName("ROLE_USER")
+                        // Use the role chosen by the user on the login page
+                        Role assignedRole = roleRepository.findByName(roleName)
                                 .orElseGet(() -> {
-                                    Role role = new Role();
-                                    role.setName("ROLE_USER");
-                                    return roleRepository.save(role);
+                                    Role newRole = new Role();
+                                    newRole.setName(roleName);
+                                    return roleRepository.save(newRole);
                                 });
-                        
+
                         User newUser = User.builder()
                                 .email(email)
                                 .provider("GOOGLE")
                                 .password("")
                                 .enabled(true)
-                                .roles(new HashSet<>(Collections.singleton(userRole)))
+                                .roles(new HashSet<>(Collections.singleton(assignedRole)))
                                 .build();
-                        return userRepository.save(newUser);
+                        User savedUser = userRepository.save(newUser);
+
+                        // Create profile for new Google user
+                        Profile profile = Profile.builder()
+                                .name(name)
+                                .user(savedUser)
+                                .build();
+                        savedUser.setProfile(profile);
+                        return userRepository.save(savedUser);
                     });
-            
+
             String token = jwtService.generateToken(user.getEmail());
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
             response.put("user", user);

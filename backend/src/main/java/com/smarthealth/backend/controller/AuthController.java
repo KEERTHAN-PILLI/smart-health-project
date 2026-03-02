@@ -29,14 +29,19 @@ public class AuthController {
             Map<String, Object> loginData = userService.login(request);
             String token = (String) loginData.get("token");
             User user = (User) loginData.get("user");
-            
+
             String role = user.getRoles().stream()
                     .map(roleEntity -> roleEntity.getName())
                     .findFirst()
                     .orElse("USER");
 
-            String name = user.getProfile() != null && user.getProfile().getName() != null 
-                    ? user.getProfile().getName() 
+            // ✅ Strip "ROLE_" prefix for frontend compatibility
+            if (role.startsWith("ROLE_")) {
+                role = role.substring(5);
+            }
+
+            String name = user.getProfile() != null && user.getProfile().getName() != null
+                    ? user.getProfile().getName()
                     : user.getEmail().split("@")[0];
 
             LoginResponse response = new LoginResponse();
@@ -56,20 +61,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
-            User user = userService.register(request);
-            UserResponse response = UserResponse.builder()
-                    .id(user.getId())
-                    .email(user.getEmail())
-                    .provider(user.getProvider())
-                    .enabled(user.isEnabled())
-                    .role(user.getRoles().stream()
-                            .map(roleEntity -> roleEntity.getName())
-                            .findFirst()
-                            .orElse("USER"))
-                    .build();
-            return ResponseEntity.ok(response);
+            userService.register(request);
+            return ResponseEntity.ok(Map.of("message", "Registration successful. Please login."));
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(Map.of("error", "Registration failed: " + e.getMessage()));
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -77,7 +72,7 @@ public class AuthController {
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
         try {
             userService.generateResetOtp(request.get("email"));
-            return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
+            return ResponseEntity.ok(Map.of("message", "OTP sent to email"));
         } catch (Exception e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
@@ -87,7 +82,7 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
         try {
             userService.resetPassword(request.get("email"), request.get("otp"), request.get("newPassword"));
-            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+            return ResponseEntity.ok(Map.of("message", "Password reset successful"));
         } catch (Exception e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
@@ -95,8 +90,12 @@ public class AuthController {
 
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String name = request.get("name");
+        String roleChosen = request.get("role");
+
         try {
-            Map<String, Object> loginData = userService.googleLogin(request.get("credential"));
+            Map<String, Object> loginData = userService.googleLogin(email, name, roleChosen);
             String token = (String) loginData.get("token");
             User user = (User) loginData.get("user");
 
@@ -105,14 +104,17 @@ public class AuthController {
                     .findFirst()
                     .orElse("USER");
 
-            String name = user.getProfile() != null && user.getProfile().getName() != null 
-                    ? user.getProfile().getName() 
-                    : user.getEmail().split("@")[0];
+            // ✅ Strip ROLE_ prefix for frontend (USER / TRAINER)
+            String roleClean = role.startsWith("ROLE_") ? role.substring(5) : role;
+
+            String userName = user.getProfile() != null && user.getProfile().getName() != null
+                    ? user.getProfile().getName()
+                    : (name != null ? name : user.getEmail().split("@")[0]);
 
             LoginResponse response = new LoginResponse();
             response.setToken(token);
-            response.setRole(role);
-            response.setName(name);
+            response.setRole(roleClean);
+            response.setName(userName);
             response.setEmail(user.getEmail());
 
             return ResponseEntity.ok(response);

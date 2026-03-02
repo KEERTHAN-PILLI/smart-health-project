@@ -4,12 +4,15 @@ import "../styles/auth.css";
 
 export default function Register() {
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    role: "USER", // ✅ default role
   });
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -23,8 +26,11 @@ export default function Register() {
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.email.trim()) newErrors.email = "Email is required";
     if (!form.password) newErrors.password = "Password is required";
+    if (form.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
     if (form.password !== form.confirmPassword)
       newErrors.confirmPassword = "Passwords don't match";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -32,7 +38,9 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+
     setLoading(true);
+
     try {
       const res = await fetch("http://localhost:8080/api/auth/register", {
         method: "POST",
@@ -41,19 +49,20 @@ export default function Register() {
           name: form.name,
           email: form.email,
           password: form.password,
+          role: form.role, // ✅ send role
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || "Registration failed");
       }
 
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data));
-      
-      navigate("/dashboard");
+      // Success! Redirect to login page
+      alert("Registration successful! Please login with your credentials.");
+      navigate("/login");
+
     } catch (error) {
       setErrors({ form: error.message });
     } finally {
@@ -103,7 +112,7 @@ export default function Register() {
             <input
               type="password"
               name="password"
-              placeholder="Min 8 characters"
+              placeholder="Min 6 characters"
               value={form.password}
               onChange={handleChange}
               required
@@ -124,6 +133,19 @@ export default function Register() {
             {errors.confirmPassword && (
               <p className="error-text">{errors.confirmPassword}</p>
             )}
+          </div>
+
+          {/* ✅ NEW ROLE SELECTION */}
+          <div className="form-group">
+            <label>SELECT ROLE</label>
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+            >
+              <option value="USER">User</option>
+              <option value="TRAINER">Trainer</option>
+            </select>
           </div>
 
           <button type="submit" className="auth-button" disabled={loading}>

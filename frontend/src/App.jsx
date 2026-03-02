@@ -9,7 +9,9 @@ function ProtectedRoute({ children, allowedRole }) {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (allowedRole && role !== allowedRole) {
     return <Navigate to="/login" replace />;
@@ -21,7 +23,10 @@ function ProtectedRoute({ children, allowedRole }) {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* ✅ Default page = Login */}
+      <Route path="/" element={<Login />} />
+
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
@@ -44,6 +49,7 @@ export default function App() {
       />
 
       <Route path="*" element={<Navigate to="/login" replace />} />
+
     </Routes>
   );
 }

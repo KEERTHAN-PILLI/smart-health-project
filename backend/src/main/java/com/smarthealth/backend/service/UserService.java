@@ -7,11 +7,11 @@ import com.smarthealth.backend.entity.User;
 
 public interface UserService {
 
-    User register(RegisterRequest request);
-    
+    Map<String, Object> register(RegisterRequest request);
+
     Map<String, Object> login(com.smarthealth.backend.dto.LoginRequest request);
 
-    Map<String, Object> googleLogin(String credential);
+    Map<String, Object> googleLogin(String email, String name, String role);
 
     User findByEmail(String email);
 

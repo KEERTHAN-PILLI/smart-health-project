@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import "../styles/auth.css";
 
 export default function Login() {
@@ -8,6 +8,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(""); // "USER" or "TRAINER"
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotStep, setForgotStep] = useState("email");
@@ -48,8 +49,13 @@ export default function Login() {
 
       const data = await res.json();
       localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
       localStorage.setItem("user", JSON.stringify(data));
-      navigate("/dashboard");
+      if (data.role === "TRAINER") {
+        navigate("/trainer-dashboard");
+      } else {
+        navigate("/user-dashboard");
+      }
     } catch (error) {
       setErrors({ form: error.message });
     } finally {
@@ -116,18 +122,53 @@ export default function Login() {
     }
   };
 
-  // Google OAuth Success Handler
-  const handleGoogleSuccess = (credentialResponse) => {
-    console.log("Google Login Success:", credentialResponse);
-    // TODO: Send credential to your backend for verification
-    // For now, just navigate to dashboard
-    navigate("/dashboard");
-  };
+  // Google OAuth — standard popup flow (bypasses FedCM / COOP issues)
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // 1. Get user info from Google using the access token
+        const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const userInfo = await userInfoRes.json();
 
-  // Google OAuth Error Handler  
-  const handleGoogleError = () => {
-    console.log("Google Login Failed");
-    setErrors({ form: "Google login failed. Please try again." });
+        // 2. Send the Google user info + selected role to our backend
+        const res = await fetch("http://localhost:8080/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userInfo.email, name: userInfo.name, role: selectedRole }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Google login failed");
+        }
+
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.role);
+        localStorage.setItem("user", JSON.stringify(data));
+        if (data.role === "TRAINER") {
+          navigate("/trainer-dashboard");
+        } else {
+          navigate("/user-dashboard");
+        }
+      } catch (error) {
+        setErrors({ form: error.message });
+      }
+    },
+    onError: () => {
+      setErrors({ form: "Google login failed. Please try again." });
+    },
+  });
+
+  const handleGoogleClick = () => {
+    if (!selectedRole) {
+      setErrors({ googleRole: "Please select a role (User or Trainer) before continuing with Google." });
+      return;
+    }
+    setErrors({});
+    googleLogin();
   };
 
   return (
@@ -184,17 +225,54 @@ export default function Login() {
 
         <div className="divider">OR</div>
 
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "0.75rem" }}>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            useOneTap
-            theme="filled_blue"
-            size="large"
-            text="continue_with"
-            shape="rectangular"
-          />
+        {/* ── Role selector ── */}
+        <div style={{ marginBottom: "0.75rem" }}>
+          <p style={{ fontSize: "0.82rem", color: "var(--text-gray)", textAlign: "center", marginBottom: "0.6rem", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+            Select your role to continue with Google
+          </p>
+          <div style={{ display: "flex", gap: "0.75rem" }}>
+            {["USER", "TRAINER"].map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => { setSelectedRole(r); setErrors((e) => ({ ...e, googleRole: "" })); }}
+                style={{
+                  flex: 1,
+                  padding: "0.65rem",
+                  borderRadius: "8px",
+                  border: selectedRole === r
+                    ? "2px solid var(--primary)"
+                    : "1px solid rgba(148,163,184,0.25)",
+                  background: selectedRole === r
+                    ? "rgba(251,242,79,0.12)"
+                    : "rgba(15,23,42,0.6)",
+                  color: selectedRole === r ? "var(--primary)" : "var(--text-gray)",
+                  fontWeight: selectedRole === r ? 700 : 500,
+                  fontSize: "0.88rem",
+                  cursor: "pointer",
+                  transition: "var(--transition)",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                {r === "USER" ? "👤 User" : "🏋️ Trainer"}
+              </button>
+            ))}
+          </div>
+          {errors.googleRole && (
+            <p style={{ fontSize: "0.8rem", color: "var(--error)", marginTop: "0.4rem", textAlign: "center" }}>
+              {errors.googleRole}
+            </p>
+          )}
         </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleClick}
+          className="google-button"
+        >
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" /><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" /><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.01 24.01 0 0 0 0 21.56l7.98-6.19z" /><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" /></svg>
+          Continue with Google
+        </button>
 
         <p className="auth-footer-text">
           Don't have an account?{" "}
@@ -265,6 +343,7 @@ export default function Login() {
                     onChange={(e) => setOtp(e.target.value.slice(0, 6))}
                     placeholder="000000"
                     maxLength="6"
+                    autoComplete="off"
                     required
                   />
                 </div>
@@ -275,6 +354,7 @@ export default function Login() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Enter new password"
+                    autoComplete="new-password"
                     required
                   />
                 </div>

@@ -1,32 +1,66 @@
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-} from "chart.js";
+import { useEffect, useState } from "react";
+import API from "../api/axios";
+import BottomNav from "../components/BottomNav";
+import "../styles/app.css";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement);
+export default function UserDashboard() {
+  const [workouts, setWorkouts] = useState([]);
 
-function Dashboard() {
-  const data = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    datasets: [
-      {
-        label: "Calories Burned",
-        data: [200, 300, 250, 400, 350],
-        borderColor: "#00c6ff",
-      },
-    ],
+  useEffect(() => {
+    fetchWorkouts();
+  }, []);
+
+  const fetchWorkouts = async () => {
+    try {
+      const res = await API.get("/user/workouts");
+      setWorkouts(res.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
-    <div className="glass">
-      <h2>Weekly Progress</h2>
-      <Line data={data} />
+    <div className="app-container">
+      <h2>Health Trackers</h2>
+
+      {/* Workout Section */}
+      <div className="section">
+        <h3>Workout Log</h3>
+        {workouts.map((w) => (
+          <div key={w.id} className="card-item">
+            <span>{w.workoutType}</span>
+            <span>{w.durationMinutes} min</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Meal Section Placeholder */}
+      <div className="section">
+        <h3>Meal Tracker</h3>
+        <div className="card-item">
+          <span>Breakfast</span>
+          <span>500 kcal</span>
+        </div>
+        <div className="card-item">
+          <span>Lunch</span>
+          <span>700 kcal</span>
+        </div>
+      </div>
+
+      {/* Daily Logs Section */}
+      <div className="section">
+        <h3>Daily Logs</h3>
+        <div className="card-item">
+          <span>Water Intake</span>
+          <span>8 glasses</span>
+        </div>
+        <div className="card-item">
+          <span>Sleep</span>
+          <span>7 hours</span>
+        </div>
+      </div>
+
+      <BottomNav />
     </div>
   );
 }
-
-export default Dashboard;

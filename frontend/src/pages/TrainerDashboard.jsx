@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Users, Activity, ChevronRight, User } from "lucide-react";
+import { Users, Activity, ChevronRight, User, X, MessageCircle } from "lucide-react";
 import API from "../api/axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function TrainerDashboard() {
   const name = localStorage.getItem("name") || "Trainer";
   const [clients, setClients] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchClients();
@@ -44,6 +45,16 @@ export default function TrainerDashboard() {
     }
   };
 
+  const handleReject = async (userEmail) => {
+    try {
+      await API.post("/trainer/reject-client", { userEmail });
+      fetchPendingRequests();
+    } catch (err) {
+      console.log(err);
+      alert("Failed to reject client.");
+    }
+  };
+
   return (
     <div>
       <div className="header-row">
@@ -75,6 +86,7 @@ export default function TrainerDashboard() {
         </div>
       </div>
 
+      {/* Pending Requests */}
       {pendingRequests.length > 0 && (
         <div className="section" style={{ background: "#fef9c3", padding: "16px", borderRadius: "16px", marginBottom: "24px" }}>
           <div className="section-title" style={{ color: "#ca8a04", marginBottom: "12px", fontSize: "15px" }}>Pending Requests ({pendingRequests.length})</div>
@@ -89,40 +101,70 @@ export default function TrainerDashboard() {
                   <div className="sub-text">{req.userEmail}</div>
                 </div>
               </div>
-              <button
-                className="modern-btn"
-                onClick={() => handleApprove(req.userEmail)}
-                style={{ background: "#22c55e", color: "white", padding: "6px 16px", fontSize: "14px" }}
-              >
-                Approve
-              </button>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  className="modern-btn"
+                  onClick={() => handleApprove(req.userEmail)}
+                  style={{ background: "#22c55e", color: "white", padding: "6px 16px", fontSize: "14px", border: "none", borderRadius: "8px", cursor: "pointer" }}
+                >
+                  Approve
+                </button>
+                <button
+                  className="modern-btn"
+                  onClick={() => handleReject(req.userEmail)}
+                  style={{ background: "#ef4444", color: "white", padding: "6px 16px", fontSize: "14px", border: "none", borderRadius: "8px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+                >
+                  <X size={14} /> Reject
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
+      {/* Connected Clients */}
       <div className="section">
         <div className="section-title">
           Connected Clients
-          <Link to="/trainer/clients" style={{ fontSize: "14px", color: "#3b82f6", textDecoration: "none", fontWeight: "500" }}>Manage All</Link>
         </div>
 
         {clients.length > 0 ? (
           clients.map((client) => (
-            <Link key={client.id} to={`/trainer/client/${client.email}`} style={{ textDecoration: "none", color: "inherit" }}>
-              <div className="card-item" style={{ cursor: "pointer" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div style={{ background: "#e2e8f0", padding: "10px", borderRadius: "12px", color: "#475569" }}>
-                    <User size={20} />
-                  </div>
-                  <div>
-                    <div className="font-semibold">{client.name || "Client"}</div>
-                    <div className="sub-text">{client.email}</div>
-                  </div>
+            <div key={client.id || client.email} className="card-item">
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ background: "#e2e8f0", padding: "10px", borderRadius: "12px", color: "#475569" }}>
+                  <User size={20} />
                 </div>
-                <ChevronRight size={20} color="#94a3b8" />
+                <div>
+                  <div className="font-semibold">{client.name || "Client"}</div>
+                  <div className="sub-text">{client.email}</div>
+                  {client.fitnessGoal && (
+                    <div className="sub-text" style={{ fontSize: "11px", color: "#3b82f6" }}>Goal: {client.fitnessGoal}</div>
+                  )}
+                </div>
               </div>
-            </Link>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <button
+                  onClick={() => navigate(`/trainer/messages/${client.email}`)}
+                  style={{
+                    background: "#3b82f6", color: "white", border: "none",
+                    padding: "6px 14px", borderRadius: "8px", cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: "4px", fontSize: "13px"
+                  }}
+                >
+                  <MessageCircle size={14} /> Message
+                </button>
+                <Link to={`/trainer/client/${client.email}`} style={{ textDecoration: "none" }}>
+                  <button style={{
+                    background: "#f1f5f9", color: "#475569", border: "none",
+                    padding: "6px 14px", borderRadius: "8px", cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: "4px", fontSize: "13px"
+                  }}>
+                    View Data <ChevronRight size={14} />
+                  </button>
+                </Link>
+              </div>
+            </div>
           ))
         ) : (
           <div className="card-item" style={{ justifyContent: "center", color: "#64748b" }}>

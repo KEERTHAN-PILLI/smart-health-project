@@ -1,4 +1,4 @@
-import { LayoutDashboard, Activity, Apple, User, Users } from "lucide-react";
+import { LayoutDashboard, Activity, Apple, User, Users, MessageCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function BottomNav() {
@@ -32,7 +32,7 @@ export default function BottomNav() {
                 className={`nav-item ${currentPath === '/bmi' ? 'active' : ''}`}
             >
                 <div className="nav-icon">
-                    <Activity /> {/* Reusing Activity or another icon for BMI */}
+                    <Activity />
                 </div>
                 <span>BMI Calc</span>
             </Link>

@@ -40,6 +40,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String password;
 
     // ==================== DEFAULT FIELDS ====================

@@ -46,6 +46,7 @@ public class SecurityConfig {
                         // ✅ Role-based APIs
                         .requestMatchers("/api/user/**").hasRole("USER")
                         .requestMatchers("/api/trainer/**").hasRole("TRAINER")
+                        .requestMatchers("/api/messages/**").authenticated()
 
                         .anyRequest().authenticated())
 

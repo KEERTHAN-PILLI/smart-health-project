@@ -12,6 +12,7 @@ import FindTrainers from "./pages/FindTrainers";
 import DashboardLayout from "./components/DashboardLayout";
 import TrainerLayout from "./components/TrainerLayout";
 import ClientDetails from "./pages/ClientDetails";
+import Messages from "./pages/Messages";
 
 function ProtectedRoute({ children, allowedRole }) {
   const token = localStorage.getItem("token");
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="/bmi" element={<BmiCalculator />} />
         <Route path="/find-trainers" element={<FindTrainers />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/messages/:email" element={<Messages />} />
       </Route>
 
       {/* TRAINER DASHBOARD ROUTES WITH LAYOUT */}
@@ -59,9 +61,10 @@ export default function App() {
         </ProtectedRoute>
       }>
         <Route path="/trainer-dashboard" element={<TrainerDashboard />} />
-        <Route path="/trainer/clients" element={<TrainerDashboard />} /> {/* Same view for now, could split later */}
+        <Route path="/trainer/clients" element={<TrainerDashboard />} />
         <Route path="/trainer/client/:email" element={<ClientDetails />} />
-        <Route path="/trainer/profile" element={<Profile />} /> {/* Reusing standard profile for trainer */}
+        <Route path="/trainer/profile" element={<Profile />} />
+        <Route path="/trainer/messages/:email" element={<Messages />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

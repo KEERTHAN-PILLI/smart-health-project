@@ -8,7 +8,7 @@ export default function TrainerLayout() {
         <div className="app-container">
             <div className="main-layout">
                 <TrainerNav />
-                <div className="page-content">
+                <div className="page-content trainer-bg">
                     <Outlet />
                 </div>
             </div>

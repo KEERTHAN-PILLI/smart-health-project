@@ -371,3 +371,22 @@ p {
         gap: 24px;
     }
 }
+
+/* =========================================
+   BACKGROUND OVERLAYS
+========================================= */
+.user-bg {
+    background: linear-gradient(rgba(248, 250, 252, 0.85), rgba(248, 250, 252, 0.85)),
+        url('../assets/backgrounds/user-bg.png') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-attachment: fixed !important;
+}
+
+.trainer-bg {
+    background: linear-gradient(rgba(240, 244, 248, 0.9), rgba(240, 244, 248, 0.9)),
+        url('../assets/backgrounds/trainer-bg.png') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-attachment: fixed !important;
+}

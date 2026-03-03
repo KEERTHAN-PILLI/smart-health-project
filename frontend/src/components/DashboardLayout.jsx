@@ -8,7 +8,7 @@ export default function DashboardLayout() {
         <div className="app-container">
             <div className="main-layout">
                 <BottomNav />
-                <div className="page-content">
+                <div className="page-content user-bg">
                     <Outlet />
                 </div>
             </div>

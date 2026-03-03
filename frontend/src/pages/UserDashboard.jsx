@@ -37,7 +37,7 @@ export default function UserDashboard() {
       <div className="header-row">
         <div>
           <h1 className="welcome-title">Hi, {name}</h1>
-          <p className="welcome-subtitle">Here is your daily overview</p>
+          <p className="welcome-subtitle"> Hey, Here is your daily overview</p>
         </div>
         <div className="user-avatar">
           {name.charAt(0).toUpperCase()}

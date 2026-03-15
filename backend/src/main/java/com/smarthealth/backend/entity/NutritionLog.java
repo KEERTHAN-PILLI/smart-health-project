@@ -1,11 +1,13 @@
 package com.smarthealth.backend.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,24 +20,20 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Profile {
+public class NutritionLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int age;
-    private double weight;
-    private double height;
-    private String fitnessGoal;
-    private String name;
+    private String mealCategory; // e.g., "Breakfast", "Lunch", "Dinner", "Snack"
+    private String foodItems;    // e.g., "Oatmeal & Eggs"
+    private int calories;        // Calories consumed
+    private double protein;      // Protein in grams (optional tracking)
     
-    // Nutrition / Daily targets
-    private Integer targetCalories;
-    private Double targetWater;
-    private Double targetSleep;
+    private LocalDate logDate;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id")
     @com.fasterxml.jackson.annotation.JsonIgnore
     private User user;

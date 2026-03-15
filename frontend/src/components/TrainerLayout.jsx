@@ -6,9 +6,9 @@ import "../styles/dashboard.css";
 export default function TrainerLayout() {
     return (
         <div className="app-container">
-            <div className="main-layout">
+            <div className="main-layout trainer-bg">
                 <TrainerNav />
-                <div className="page-content trainer-bg">
+                <div className="page-content">
                     <Outlet />
                 </div>
             </div>

@@ -23,8 +23,21 @@ public class ProfileServiceImpl implements ProfileService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        profile.setUser(user);
+        // If profile already exists, update it instead of creating a new one to avoid detached entity passed to persist
+        Profile existingProfile = profileRepository.findByUser(user).orElse(null);
+        if (existingProfile != null) {
+            existingProfile.setAge(profile.getAge());
+            existingProfile.setWeight(profile.getWeight());
+            existingProfile.setHeight(profile.getHeight());
+            existingProfile.setFitnessGoal(profile.getFitnessGoal());
+            existingProfile.setName(profile.getName());
+            existingProfile.setTargetCalories(profile.getTargetCalories());
+            existingProfile.setTargetWater(profile.getTargetWater());
+            existingProfile.setTargetSleep(profile.getTargetSleep());
+            return profileRepository.save(existingProfile);
+        }
 
+        profile.setUser(user);
         return profileRepository.save(profile);
     }
 

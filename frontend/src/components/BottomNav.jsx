@@ -66,6 +66,16 @@ export default function BottomNav() {
                 </div>
                 <span>Profile</span>
             </Link>
+
+            <Link
+                to="/subscription"
+                className="sub-nav-item"
+                style={{ marginTop: '20px' }}
+                onClick={(e) => { e.preventDefault(); alert("Premium Subscription Hub coming soon! Pricing: ₹499/month"); }}
+            >
+                <MessageCircle size={20} />
+                <span style={{ fontSize: '14px', fontWeight: '700' }}>Subscription</span>
+            </Link>
         </div>
     );
 }

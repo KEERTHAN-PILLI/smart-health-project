@@ -2,18 +2,7 @@
 @import './app.css';
 
 /* Any specific dashboard overrides can go here */
-.welcome-title {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    color: #0f172a;
-}
 
-.welcome-subtitle {
-    font-size: 15px;
-    color: #64748b;
-    margin-top: 4px;
-}
 
 .profile-card {
     background: #ffffff;

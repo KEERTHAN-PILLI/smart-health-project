@@ -1,11 +1,16 @@
 package com.smarthealth.backend.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,30 +18,31 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Table(name = "daily_logs")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Profile {
+public class DailyLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int age;
-    private double weight;
-    private double height;
-    private String fitnessGoal;
-    private String name;
-    
-    // Nutrition / Daily targets
-    private Integer targetCalories;
-    private Double targetWater;
-    private Double targetSleep;
-
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private User user;
+
+    private LocalDate date;
+
+    // Workout metrics
+    private Integer workoutDuration; // in minutes
+    private Integer caloriesBurned;
+
+    // Diet / General metrics
+    private Integer caloriesConsumed;
+    private Integer waterIntake; // in ml
+    private Double sleepDuration; // in hours
 }

@@ -13,6 +13,9 @@ import DashboardLayout from "./components/DashboardLayout";
 import TrainerLayout from "./components/TrainerLayout";
 import ClientDetails from "./pages/ClientDetails";
 import Messages from "./pages/Messages";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import GoalTracking from "./pages/GoalTracking";
+import HealthBlog from "./pages/HealthBlog";
 
 function ProtectedRoute({ children, allowedRole }) {
   const token = localStorage.getItem("token");
@@ -52,6 +55,9 @@ export default function App() {
         <Route path="/find-trainers" element={<FindTrainers />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/messages/:email" element={<Messages />} />
+        <Route path="/analytics" element={<AnalyticsDashboard />} />
+        <Route path="/goals" element={<GoalTracking />} />
+        <Route path="/blog" element={<HealthBlog />} />
       </Route>
 
       {/* TRAINER DASHBOARD ROUTES WITH LAYOUT */}

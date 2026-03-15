@@ -53,56 +53,69 @@ export default function BmiCalculator() {
                 </div>
             </div>
 
-            <div className="section">
-                <div style={{ background: "#ffffff", padding: "24px", borderRadius: "20px", boxShadow: "0 2px 4px rgba(0,0,0,0.02)", border: "1px solid #f1f5f9" }}>
-                    <form onSubmit={calculateBmi} className="form-row">
-                        <div className="form-group">
-                            <label>Height (cm)</label>
-                            <input
-                                className="form-input"
-                                type="number"
-                                placeholder="e.g. 175"
-                                value={height}
-                                onChange={(e) => setHeight(e.target.value)}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Weight (kg)</label>
-                            <input
-                                className="form-input"
-                                type="number"
-                                placeholder="e.g. 70"
-                                value={weight}
-                                onChange={(e) => setWeight(e.target.value)}
-                            />
-                        </div>
-                        <button type="submit" className="modern-btn primary" style={{ marginTop: "16px" }}>
-                            <Scale size={18} /> Calculate BMI
-                        </button>
-                    </form>
+      <div className="activity-grid">
+        <div className="section">
+          <div className="section-title">Calculate Your BMI</div>
+          <div className="form-card">
+            <form onSubmit={calculateBmi} className="form-row">
+              <div className="form-group">
+                <label>Height (cm)</label>
+                <input
+                  className="form-input"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff' }}
+                  type="number"
+                  placeholder="e.g. 175"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label>Weight (kg)</label>
+                <input
+                  className="form-input"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff' }}
+                  type="number"
+                  placeholder="e.g. 70"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="modern-btn primary" style={{ marginTop: "16px", borderRadius: '14px', height: '54px' }}>
+                <Scale size={20} /> Calculate Now
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="section">
+          <div className="section-title">Your Health Status</div>
+          {bmiResult ? (
+            <div className="form-card" style={{ textAlign: "center", border: `2px solid ${bmiResult.color}80`, animation: "fadeIn 0.5s ease" }}>
+              <div style={{ fontSize: "14px", color: "#94a3b8", fontWeight: "600", letterSpacing: '1px', textTransform: 'uppercase', marginBottom: "12px" }}>BMI Score</div>
+              <div style={{ fontSize: "64px", fontWeight: "900", color: bmiResult.color, textShadow: `0 0 20px ${bmiResult.color}40`, marginBottom: "8px" }}>
+                {bmiResult.value}
+              </div>
+              <div style={{ display: "inline-block", background: `${bmiResult.color}20`, color: bmiResult.color, padding: "8px 24px", borderRadius: "14px", fontWeight: "800", fontSize: "18px", marginBottom: "24px", border: `1px solid ${bmiResult.color}40` }}>
+                {bmiResult.category}
+              </div>
+
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "16px", background: "rgba(255,255,255,0.02)", padding: "20px", borderRadius: "18px", textAlign: "left", border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '10px', borderRadius: '12px' }}>
+                  <Info size={24} color="#3b82f6" />
                 </div>
+                <p style={{ fontSize: "14px", color: "#cbd5e1", lineHeight: "1.6" }}>
+                  {bmiResult.message}
+                </p>
+              </div>
             </div>
-
-            {bmiResult && (
-                <div className="section" style={{ animation: "fadeIn 0.4s ease" }}>
-                    <div style={{ background: "#ffffff", padding: "32px 24px", borderRadius: "20px", border: `2px solid ${bmiResult.color}40`, textAlign: "center" }}>
-                        <div style={{ fontSize: "16px", color: "#64748b", fontWeight: "500", marginBottom: "8px" }}>Your BMI Score</div>
-                        <div style={{ fontSize: "48px", fontWeight: "700", color: bmiResult.color, marginBottom: "8px" }}>
-                            {bmiResult.value}
-                        </div>
-                        <div style={{ display: "inline-block", background: `${bmiResult.color}15`, color: bmiResult.color, padding: "6px 16px", borderRadius: "20px", fontWeight: "600", fontSize: "16px", marginBottom: "16px" }}>
-                            {bmiResult.category}
-                        </div>
-
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "#f8fafc", padding: "16px", borderRadius: "12px", textAlign: "left" }}>
-                            <Info size={24} color="#3b82f6" style={{ flexShrink: 0, marginTop: "2px" }} />
-                            <p style={{ fontSize: "14px", color: "#475569", lineHeight: "1.5" }}>
-                                {bmiResult.message}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
+          ) : (
+            <div className="form-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', color: '#64748b', textAlign: 'center' }}>
+              <Scale size={48} style={{ opacity: 0.1, marginBottom: '16px' }} />
+              <p>Enter your details to see your <br/>Body Mass Index result.</p>
+            </div>
+          )}
+        </div>
+      </div>
         </div>
     );
 }

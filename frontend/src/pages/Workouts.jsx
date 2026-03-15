@@ -48,58 +48,67 @@ export default function Workouts() {
         </div>
       </div>
 
-      <div className="section">
-        <div className="section-title">Log New Workout</div>
-        <div style={{ background: "#ffffff", padding: "20px", borderRadius: "20px", boxShadow: "0 2px 4px rgba(0,0,0,0.02)", border: "1px solid #f1f5f9" }}>
-          <form onSubmit={addWorkout} className="form-row">
-            <div className="form-group">
-              <label>Activity Type</label>
-              <input
-                className="form-input"
-                placeholder="e.g. Running, Yoga, Weights"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label>Duration (minutes)</label>
-              <input
-                className="form-input"
-                type="number"
-                placeholder="e.g. 45"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="modern-btn primary" style={{ marginTop: "8px" }}>
-              <Plus size={18} /> Add Workout
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <div className="section">
-        <div className="section-title">History</div>
-        {workouts.length > 0 ? (
-          workouts.map((w) => (
-            <div key={w.id} className="card-item">
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ background: "#f1f5f9", padding: "10px", borderRadius: "12px", color: "#64748b" }}>
-                  <ActivityIcon size={20} />
-                </div>
-                <div>
-                  <div className="font-semibold">{w.workoutType}</div>
-                  <div className="sub-text">{w.date || "Today"}</div>
-                </div>
+      <div className="activity-grid">
+        <div className="section">
+          <div className="section-title">Log New Workout</div>
+          <div className="form-card">
+            <form onSubmit={addWorkout} className="form-row">
+              <div className="form-group">
+                <label>Activity Type</label>
+                <input
+                  className="form-input"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff' }}
+                  placeholder="e.g. Running, Yoga, Weights"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                />
               </div>
-              <div className="font-semibold">{w.durationMinutes} min</div>
-            </div>
-          ))
-        ) : (
-          <div className="card-item" style={{ justifyContent: "center", color: "#64748b" }}>
-            No workouts logged yet.
+              <div className="form-group">
+                <label>Duration (minutes)</label>
+                <input
+                  className="form-input"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff' }}
+                  type="number"
+                  placeholder="e.g. 45"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="modern-btn primary" style={{ marginTop: "16px", borderRadius: '14px', height: '54px' }}>
+                <Plus size={20} /> Add Workout
+              </button>
+            </form>
           </div>
-        )}
+        </div>
+
+        <div className="section">
+          <div className="section-title">History</div>
+          <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '8px', scrollbarWidth: 'none' }}>
+            {workouts.length > 0 ? (
+              workouts.map((w) => (
+                <div key={w.id} className="card-item" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <div style={{ background: "rgba(59, 130, 246, 0.1)", padding: "12px", borderRadius: "14px", color: "var(--accent-blue)" }}>
+                      <ActivityIcon size={22} />
+                    </div>
+                    <div>
+                      <div className="font-semibold" style={{ fontSize: '16px' }}>{w.workoutType}</div>
+                      <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>{w.date ? new Date(w.date).toLocaleDateString() : "Today"}</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div className="font-semibold" style={{ color: 'var(--accent-blue)', fontSize: '18px' }}>{w.durationMinutes}</div>
+                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>MINUTES</div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="card-item" style={{ justifyContent: "center", color: "#64748b", background: 'rgba(255,255,255,0.01)', borderStyle: 'dashed' }}>
+                No workouts logged yet.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smarthealth.backend.entity.User;
 import com.smarthealth.backend.entity.WorkoutLog;
 import com.smarthealth.backend.service.WorkoutService;
 
@@ -29,25 +28,23 @@ public class WorkoutController {
     public WorkoutLog addWorkout(@RequestBody WorkoutLog workout,
                                   Authentication authentication) {
 
-        User user = (User) authentication.getPrincipal();
-        return workoutService.addWorkout(user.getEmail(), workout);
+        String email = authentication.getName();
+        return workoutService.addWorkout(email, workout);
     }
 
     // 📋 Get Workouts
     @GetMapping
     public List<WorkoutLog> getWorkouts(Authentication authentication) {
-
-        User user = (User) authentication.getPrincipal();
-        return workoutService.getUserWorkouts(user.getEmail());
+        String email = authentication.getName();
+        return workoutService.getUserWorkouts(email);
     }
 
     // ❌ Delete Workout
     @DeleteMapping("/{id}")
     public String deleteWorkout(@PathVariable Long id,
                                  Authentication authentication) {
-
-        User user = (User) authentication.getPrincipal();
-        workoutService.deleteWorkout(id, user.getEmail());
+        String email = authentication.getName();
+        workoutService.deleteWorkout(id, email);
         return "Workout deleted successfully";
     }
 }

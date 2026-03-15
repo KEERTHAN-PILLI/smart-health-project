@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { UserPlus, UserCheck, Clock, User, MessageCircle } from "lucide-react";
+import { UserPlus, UserCheck, Clock, User, MessageCircle, UserMinus } from "lucide-react";
 import API from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
@@ -22,7 +22,7 @@ export default function FindTrainers() {
 
     const fetchTrainers = async () => {
         try {
-            const res = await API.get("/user/trainers");
+            const res = await API.get("/user/trainers/match");
             setTrainers(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.log("Error fetching trainers:", err);
@@ -56,6 +56,19 @@ export default function FindTrainers() {
         }
     };
 
+    const handleDisconnect = async () => {
+        if (!window.confirm("Are you sure you want to disconnect from your trainer?")) return;
+        try {
+            await API.post("/user/disconnect-trainer");
+            setConnectionStatus("NONE");
+            setConnectedTrainer(null);
+            alert("Disconnected from trainer.");
+        } catch (err) {
+            console.log("Error disconnecting:", err);
+            alert("Failed to disconnect.");
+        }
+    };
+
     const getButtonForTrainer = (trainerEmail) => {
         if (connectedTrainer === trainerEmail) {
             if (connectionStatus === "PENDING") {
@@ -81,6 +94,17 @@ export default function FindTrainers() {
                             }}
                         >
                             <MessageCircle size={16} /> Message
+                        </button>
+                        <button
+                            className="modern-btn"
+                            onClick={handleDisconnect}
+                            style={{
+                                background: "#fee2e2", color: "#ef4444", border: "1px solid #fecaca",
+                                display: "flex", gap: "6px", padding: "8px 16px",
+                                borderRadius: "8px", cursor: "pointer", fontSize: "13px"
+                            }}
+                        >
+                            <UserMinus size={16} /> Disconnect
                         </button>
                     </div>
                 );
@@ -126,30 +150,53 @@ export default function FindTrainers() {
             )}
 
             <div className="section">
-                <div className="section-title">Available Trainers</div>
+                <div className="section-title">Expert Guidance</div>
 
                 {loading ? (
-                    <div className="card-item" style={{ justifyContent: "center", color: "#64748b" }}>
-                        Loading trainers...
+                    <div className="form-card" style={{ textAlign: "center", color: "#64748b", padding: '40px' }}>
+                        <Clock size={40} className="animate-pulse" style={{ margin: '0 auto 16px', opacity: 0.2 }} />
+                        <p>Finding the best matches for you...</p>
                     </div>
-                ) : trainers.length > 0 ? (
-                    trainers.map((trainer) => (
-                        <div key={trainer.id || trainer.email} className="card-item">
-                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                                <div style={{ background: "#e2e8f0", padding: "10px", borderRadius: "12px", color: "#475569" }}>
-                                    <User size={20} />
-                                </div>
-                                <div>
-                                    <div className="font-semibold">{trainer.name || "Trainer"}</div>
-                                    <div className="sub-text">{trainer.email}</div>
-                                </div>
-                            </div>
-                            {getButtonForTrainer(trainer.email)}
-                        </div>
-                    ))
                 ) : (
-                    <div className="card-item" style={{ justifyContent: "center", color: "#64748b" }}>
-                        No trainers are currently registered on the platform.
+                    <div className="activity-grid">
+                        {trainers.length > 0 ? (
+                            trainers.map((trainer) => (
+                                <div key={trainer.id || trainer.email} className="form-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', border: trainer.recommended ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid var(--glass-border)', position: 'relative', overflow: 'hidden' }}>
+                                    {trainer.recommended && (
+                                        <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent-blue)', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '4px 10px', borderRadius: '20px', letterSpacing: '0.5px' }}>TOP MATCH</div>
+                                    )}
+                                    
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                                        <div style={{ position: 'relative' }}>
+                                            <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <User size={32} color="#94a3b8" />
+                                            </div>
+                                            <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', width: '16px', height: '16px', borderRadius: '50%', background: '#22c55e', border: '2px solid #020617' }}></div>
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold" style={{ fontSize: '18px', color: '#fff' }}>{trainer.name || "Master Coach"}</div>
+                                            <div style={{ fontSize: '13px', color: 'var(--accent-teal)', fontWeight: '600' }}>{trainer.specialization || "Expert Trainer"}</div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ flex: 1, marginBottom: '24px' }}>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                            <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '8px', color: '#94a3b8' }}>Personal Training</span>
+                                            <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '8px', color: '#94a3b8' }}>Diet Plans</span>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ pt: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                        {getButtonForTrainer(trainer.email)}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="form-card" style={{ gridColumn: '1 / -1', textAlign: "center", color: "#64748b", padding: '60px' }}>
+                                <User size={48} style={{ margin: '0 auto 16px', opacity: 0.1 }} />
+                                <p>No trainers found. Check back later!</p>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

@@ -21,6 +21,8 @@ public class TrainerController {
     private final TrainerConnectionRepository connectionRepository;
     private final UserRepository userRepository;
     private final WorkoutRepository workoutRepository;
+    private final DailyLogRepository dailyLogRepository;
+    private final NutritionLogRepository nutritionLogRepository;
 
     @GetMapping("/dashboard")
     public String trainerDashboard() {
@@ -145,6 +147,50 @@ public class TrainerController {
                     .orElseThrow(() -> new RuntimeException("Client not found"));
 
             return ResponseEntity.ok(workoutRepository.findByUser(client));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ✅ Get a specific client's analytics (logs + nutrition + profile targets)
+    @GetMapping("/client/{clientEmail}/analytics")
+    public ResponseEntity<?> getClientAnalytics(
+            @PathVariable String clientEmail,
+            Authentication authentication) {
+        try {
+            String trainerEmail = authentication.getName();
+
+            // Verify connection exists and is approved
+            boolean isConnected = connectionRepository.findByTrainerEmailAndStatus(trainerEmail, "APPROVED").stream()
+                    .anyMatch(conn -> conn.getUserEmail().equals(clientEmail));
+
+            if (!isConnected) {
+                return ResponseEntity.status(403).body(Map.of("error", "Not authorized"));
+            }
+
+            User client = userRepository.findByEmail(clientEmail)
+                    .orElseThrow(() -> new RuntimeException("Client not found"));
+
+            Map<String, Object> data = new HashMap<>();
+            
+            // Add Profile Targets
+            if (client.getProfile() != null) {
+                data.put("targetCalories", client.getProfile().getTargetCalories() != null ? client.getProfile().getTargetCalories() : 2000);
+                data.put("targetWater", client.getProfile().getTargetWater() != null ? client.getProfile().getTargetWater() : 2.5);
+                data.put("targetSleep", client.getProfile().getTargetSleep() != null ? client.getProfile().getTargetSleep() : 8.0);
+            } else {
+                data.put("targetCalories", 2000);
+                data.put("targetWater", 2.5);
+                data.put("targetSleep", 8.0);
+            }
+
+            // Daily Logs
+            data.put("dailyLogs", dailyLogRepository.findByUserOrderByDateAsc(client));
+            
+            // Nutrition Logs (Optional: maybe fetch just last 7 days or everything for demo)
+            data.put("nutritionLogs", nutritionLogRepository.findAll().stream().filter(log -> log.getUser().getId().equals(client.getId())).collect(Collectors.toList()));
+            
+            return ResponseEntity.ok(data);
         } catch (Exception e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }

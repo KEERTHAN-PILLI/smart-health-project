@@ -83,28 +83,35 @@ export default function Workouts() {
 
         <div className="section">
           <div className="section-title">History</div>
-          <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '8px', scrollbarWidth: 'none' }}>
+          <div className="form-card" style={{ maxHeight: '600px', overflowY: 'auto', padding: '16px', scrollbarWidth: 'none' }}>
             {workouts.length > 0 ? (
               workouts.map((w) => (
-                <div key={w.id} className="card-item" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <div key={w.id} className="card-item" style={{ 
+                  background: 'rgba(15, 23, 42, 0.4)', 
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  marginBottom: '12px',
+                  padding: '16px 20px'
+                }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <div style={{ background: "rgba(59, 130, 246, 0.1)", padding: "12px", borderRadius: "14px", color: "var(--accent-blue)" }}>
+                    <div style={{ background: "rgba(59, 130, 246, 0.15)", padding: "12px", borderRadius: "14px", color: "var(--accent-blue)" }}>
                       <ActivityIcon size={22} />
                     </div>
                     <div>
-                      <div className="font-semibold" style={{ fontSize: '16px' }}>{w.workoutType}</div>
-                      <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>{w.date ? new Date(w.date).toLocaleDateString() : "Today"}</div>
+                      <div className="font-semibold" style={{ fontSize: '16px', color: '#fff' }}>{w.workoutType}</div>
+                      <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px', fontWeight: '500' }}>
+                        {w.date ? new Date(w.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Today"}
+                      </div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div className="font-semibold" style={{ color: 'var(--accent-blue)', fontSize: '18px' }}>{w.durationMinutes}</div>
-                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>MINUTES</div>
+                    <div className="font-semibold" style={{ color: 'var(--accent-blue)', fontSize: '20px', fontWeight: '900' }}>{w.durationMinutes}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--accent-teal)', fontWeight: '800', letterSpacing: '1px' }}>MINUTES</div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="card-item" style={{ justifyContent: "center", color: "#64748b", background: 'rgba(255,255,255,0.01)', borderStyle: 'dashed' }}>
-                No workouts logged yet.
+              <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontSize: '14px', fontStyle: 'italic' }}>
+                No workouts logged yet. Your journey starts here!
               </div>
             )}
           </div>

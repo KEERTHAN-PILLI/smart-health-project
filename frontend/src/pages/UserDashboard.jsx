@@ -14,8 +14,12 @@ export default function UserDashboard() {
   const name = localStorage.getItem("name") || "User";
   const navigate = useNavigate();
 
+  const [currentTime, setCurrentTime] = useState(new Date());
+
   useEffect(() => {
     loadDashboardData();
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const loadDashboardData = async () => {
@@ -104,23 +108,24 @@ export default function UserDashboard() {
   return (
     <div className="user-bg" style={{ minHeight: '100vh', padding: '24px 40px' }}>
       
-      {/* Time-based Greeting & Daily Tip Section */}
+      {/* High-Visibility Live Time Section */}
       <div style={{ marginBottom: '32px', display: 'flex', gap: '20px', alignItems: 'stretch' }}>
-        <div className="premium-card" style={{ 
-          flex: 2,
-          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(15, 23, 42, 0.8))', 
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          padding: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center'
-        }}>
-            <div style={{ color: 'var(--accent-blue)', fontWeight: '900', fontSize: '24px', marginBottom: '8px' }}>
-              👋 {getTimeBasedGreeting()}
+        <div className="time-vibrant-badge" style={{ flex: 2 }}>
+            <div className="time-icon-container">
+               <Clock size={32} />
             </div>
-            <p style={{ color: '#94a3b8', fontSize: '14px' }}>
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </p>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: 'var(--accent-blue)', fontWeight: '900', fontSize: '26px', lineHeight: '1' }}>
+                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </div>
+              <div style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '6px' }}>
+                {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </div>
+            </div>
+            <div style={{ paddingLeft: '24px', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+               <div style={{ fontSize: '13px', color: '#fff', fontWeight: '800' }}>{getTimeBasedGreeting().split('!')[0]}!</div>
+               <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>Welcome back, {name}</div>
+            </div>
         </div>
 
         <div className="premium-card" style={{ flex: 1, background: 'rgba(45, 212, 191, 0.05)', border: '1px solid rgba(45, 212, 191, 0.2)', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -140,11 +145,11 @@ export default function UserDashboard() {
       <div className="header-row" style={{ alignItems: 'center', marginBottom: '40px' }}>
         <h1 className="premium-title">Discover</h1>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center', position: 'relative' }}>
-          <div style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }} onClick={() => alert("Search feature coming soon!")}>
-            <Search size={20} color="#94a3b8" />
+          <div className="icon-btn" onClick={() => alert("Search feature coming soon!")}>
+            <Search size={20} />
           </div>
-          <div style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }} onClick={() => alert("No new notifications")}>
-            <Bell size={20} color="#94a3b8" />
+          <div className="icon-btn" onClick={() => alert("No new notifications")}>
+            <Bell size={20} />
           </div>
           <div 
             className="user-avatar" 

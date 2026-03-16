@@ -68,7 +68,6 @@ export default function App() {
       }>
         <Route path="/trainer-dashboard" element={<TrainerDashboard />} />
         <Route path="/trainer/clients" element={<TrainerDashboard />} />
-        <Route path="/trainer/client/:email" element={<ClientDetails />} />
         <Route path="/trainer/profile" element={<Profile />} />
         <Route path="/trainer/messages/:email" element={<Messages />} />
       </Route>

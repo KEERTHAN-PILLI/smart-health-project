@@ -195,4 +195,21 @@ public class TrainerController {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
+
+    // ✅ Disconnect a client
+    @PostMapping("/disconnect-client")
+    public ResponseEntity<?> disconnectClient(@RequestBody Map<String, String> payload, Authentication authentication) {
+        try {
+            String trainerEmail = authentication.getName();
+            String userEmail = payload.get("userEmail");
+
+            TrainerConnection connection = connectionRepository.findByUserEmailAndTrainerEmail(userEmail, trainerEmail)
+                    .orElseThrow(() -> new RuntimeException("Connection not found"));
+
+            connectionRepository.delete(connection);
+            return ResponseEntity.ok(Map.of("message", "Client disconnected successfully", "status", "NONE"));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
 }

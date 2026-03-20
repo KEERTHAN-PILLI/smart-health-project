@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { Flame, Activity, Droplet, Moon, ChevronRight, Lightbulb, Search, Bell, Chrome as HeartFill, LogOut, Settings, User as UserIcon } from "lucide-react";
+import { Clock, Flame, Activity, Droplet, Moon, ChevronRight, Lightbulb, Search, Bell, Chrome as HeartFill, LogOut, Settings, User as UserIcon } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 export default function UserDashboard() {
